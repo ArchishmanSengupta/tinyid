@@ -65,3 +65,8 @@ func generateTinyId(alphabet string, size int) (string, error) {
 		}
 	}
 }
+
+// NewTinyID generates a random string with default settings.
+func NewTinyID() (string, error) {
+	return generateTinyId(DefaultAlphabet, DefaultSize)
+}
