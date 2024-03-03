@@ -4,8 +4,8 @@ import (
 	"crypto/rand"
 	"errors"
 	"math"
-	"math/bits"
-	"strings"
+	// "math/bits"
+	// "strings"
 )
 
 // Represent the default alphabet and size for the generated tiny IDs.
@@ -33,37 +33,43 @@ func generateTinyId(alphabet string, size int) (string, error) {
 		return "", errors.New("tinyId: size must be greater than 0")
 	}
 
-	// calculate mask to ensure that random bytes are mapped properly to the given alphabet
-	mask := 2<<uint32(31-bits.LeadingZeros32(uint32(len(alphabet)-1|1))) - 1
+	// Calculate mask based on alphabet length
+	mask := len(alphabet) - 1
 
-	// calulates the step size based on the desired size and alphabet length to ensure an even distribution of characters
+	// Calculate step size based on mask and size
 	step := int(math.Ceil(1.6 * float64(mask*size) / float64(len(alphabet))))
 
-	// initialize string builder to efficiently generate the ID
-	id := new(strings.Builder)
+	// Initialize byte slice to hold ID
+	id := make([]byte, size)
 
-	id.Grow(size)
-
-	// iterating to generate the ID
-	for {
-		// generate a random buffer of bytes
+	// Generate ID
+	for i := 0; i < size; {
+		// Generate random buffer of bytes
 		randomBuffer, err := randomBufferGenerator(step)
 		if err != nil {
 			return "", err
 		}
 
-		for i := 0; i < step; i++ {
-			// mapping each byte to a character in the alphabet using bitwise operations and the calculated mask
-			currentIndex := int(randomBuffer[i]) & mask
-			if currentIndex < len(alphabet) {
-				if err := id.WriteByte(alphabet[currentIndex]); err != nil {
-					return "", err
-				} else if id.Len() == size {
-					return id.String(), nil
+		// Process random buffer
+		for _, b := range randomBuffer {
+			// Map byte to character in alphabet using mask
+			index := int(b) & mask
+
+			// Check if index is within alphabet range
+			if index < len(alphabet) {
+				// Add character to ID
+				id[i] = alphabet[index]
+				i++
+
+				// Check if ID is complete
+				if i == size {
+					break
 				}
 			}
 		}
 	}
+
+	return string(id), nil
 }
 
 // NewTinyID generates a random string with default settings.

@@ -14,6 +14,11 @@ func TestGenerateTinyID(t *testing.T) {
 	if len(id) != DefaultSize {
 		t.Errorf("Expected ID length to be %v, got %v", DefaultSize, len(id))
 	}
+	for _, char := range id {
+		if !strings.Contains(DefaultAlphabet, string(char)) {
+			t.Errorf("ID contains invalid character: %v", char)
+		}
+	}
 
 	// Test with custom settings
 	customAlphabet := "abc123"
@@ -47,10 +52,21 @@ func TestNewTinyID(t *testing.T) {
 	if len(id) != DefaultSize {
 		t.Errorf("Expected ID length to be %v, got %v", DefaultSize, len(id))
 	}
+	for _, char := range id {
+		if !strings.Contains(DefaultAlphabet, string(char)) {
+			t.Errorf("ID contains invalid character: %v", char)
+		}
+	}
 }
 
 func BenchmarkNewTinyID(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, _ = NewTinyID()
+	}
+}
+
+func BenchmarkGenerateTinyID(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_, _ = generateTinyId(DefaultAlphabet, DefaultSize)
 	}
 }
